@@ -1,3 +1,10 @@
+# Custom
+.*
+._*
+CMakeLists.txt
+.idea
+*.o
+
 # Prerequisites
 *.d
 
