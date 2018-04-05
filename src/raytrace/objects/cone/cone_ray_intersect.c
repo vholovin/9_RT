@@ -10,57 +10,66 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv.h"
+#include "rt.h"
 
-/*
-** Solving the discriminant
-*/
-
-static float	calculate_discriminant(t_ray *r, t_obj3d *o, float *b, float *a)
+static float	calculate_discriminant(t_ray *r, t_obj3d *obj,
+					float *b, float *a)
 {
-	t_cone	*s;
-	float	c_cov[2];
-	float	cov;
-	float	tmp[3];
-	t_vec3d	co;
+	t_cone	*cone;
+	t_vec3	dist;
+	float	c;
 
-	s = o->type;
-	c_cov[1] = vec3_dot(&r->dir, &s->axis);
-	co = vec3_sub(&r->start, &o->pos);
-	cov = vec3_dot(&co, &s->axis);
-	tmp[0] = vec3_dot(&r->dir, &co);
-	tmp[1] = powf(cosf(s->angle), 2);
-	tmp[2] = vec3_dot(&co, &co);
-	*a = powf(c_cov[1], 2) - tmp[1];
-	*b = 2.0f * (c_cov[1] * cov - tmp[0] * tmp[1]);
-	c_cov[0] = powf(cov, 2) - tmp[2] * tmp[1];
-	return (powf(*b, 2) - (4 * *a * c_cov[0]));
+	cone = obj->type;
+	dist = vec3_sub(&r->pos, &obj->pos);
+	obj->rot = vec3_norm(obj->rot);
+	*a = vec3_dot(r->dir, r->dir) - (1.0f + powf(tanf(cone->angle), 2.0f))
+		* powf(vec3_dot(r->dir, obj->rot), 2.0f);
+	*b = 2.0f * (vec3_dot(r->dir, dist) - (1.0f + powf(tanf(cone->angle), 2.0f))
+		* vec3_dot(r->dir, obj->rot) * vec3_dot(dist, obj->rot));
+	c = vec3_dot(dist, dist) - (1.0f + powf(tanf(cone->angle), 2.0f))
+		* powf(vec3_dot(dist, obj->rot), 2.0f);
+	return (*b * *b - 4.0f * *a * c);
 }
 
-/*
-** Check if the ray and sphere intersect
-*/
-
-t_bool			intersect_cone_ray(t_ray *r, t_obj3d *object, float *t)
+static void		calculate_parameters(float *data,
+					float *x0, float *x1, float *d)
 {
-	float	b;
-	float	a;
-	float	discr;
-	float	t0;
-	float	t1;
+	float discr;
+	float a;
+	float b;
 
-	discr = calculate_discriminant(r, object, &b, &a);
-	if (discr < 0)
+	discr = data[0];
+	a = data[1];
+	b = data[2];
+	if (discr == 0.0f)
+	{
+		*x0 = -0.5f * b / a;
+		*x1 = *x0;
+	}
+	else if (discr > 0.0f)
+	{
+		*x0 = (-b + sqrtf(discr)) / (2.0f * a);
+		*x1 = (-b - sqrtf(discr)) / (2.0f * a);
+		if (fabsf(*d) > fabsf(*x1))
+			*x0 = *x1;
+	}
+}
+
+t_bool			intersect_cone(t_ray *r, t_obj3d *obj, float *d)
+{
+	float	x0;
+	float	x1;
+	float	data[3];
+
+	data[0] = calculate_discriminant(r, obj, &data[2], &data[1]);
+	if (data[0] < 0.0f || data[1] == 0.0f)
 		return (false);
 	else
 	{
-		t0 = (-b + sqrtf(discr)) / (2 * a);
-		t1 = (-b - sqrtf(discr)) / (2 * a);
-		if (t0 > t1)
-			t0 = t1;
-		if ((t0 > 0.2) && (t0 < *t))
+		calculate_parameters(data, &x0, &x1, d);
+		if ((x0 > 0.5f) && (x0 < *d))
 		{
-			*t = t0;
+			*d = x0;
 			return (true);
 		}
 		else

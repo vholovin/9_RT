@@ -16,6 +16,7 @@
 # include <string.h>
 # include <unistd.h>
 # include <stdlib.h>
+# include "get_next_line.h"
 
 typedef struct		s_list
 {
@@ -115,4 +116,8 @@ void				ft_putnbr_fd(int n, int fd);
 */
 char				*ft_itoa(int n);
 int					ft_atoi(const char *str);
+/*
+** swap digit
+*/
+void				ft_swap(double *a, double *b);
 #endif

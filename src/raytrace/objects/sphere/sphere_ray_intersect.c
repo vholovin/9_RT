@@ -10,53 +10,62 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv.h"
+#include "rt.h"
 
-/*
-** Solving the discriminant
-*/
-
-static float	calculate_discriminant(t_ray *r, t_obj3d *object, float *b)
+static float	calculate_discriminant(t_ray *r, t_obj3d *obj,
+					float *a, float *b)
 {
-	float		a;
-	float		c;
-	t_vec3d		dist;
 	t_sphere	*s;
+	t_vec3		dist;
+	float		c;
 
-	s = object->type;
-	a = vec3_dot(&r->dir, &r->dir);
-	dist = vec3_sub(&r->start, &object->pos);
-	*b = 2 * vec3_dot(&r->dir, &dist);
-	c = vec3_dot(&dist, &dist) - (s->radius * s->radius);
-	return (*b * *b - 4 * a * c);
+	s = obj->type;
+	dist = vec3_sub(&r->pos, &obj->pos);
+	*a = vec3_dot(r->dir, r->dir);
+	*b = 2.0f * vec3_dot(r->dir, dist);
+	c = vec3_dot(dist, dist) - powf(s->radius, 2.0f);
+	return (*b * *b - 4.0f * *a * c);
 }
 
-/*
-** Check if the ray and sphere intersect
-*/
-
-t_bool			intersect_sphere_ray(t_ray *r, t_obj3d *object, float *t)
+static void		calculate_parameters(float *data,
+					float *x0, float *x1)
 {
-	float		b;
-	float		discr;
-	float		sqrtdiscr;
-	float		t0;
-	float		t1;
+	float discr;
+	float a;
+	float b;
 
-	b = 0;
-	discr = calculate_discriminant(r, object, &b);
-	if (discr < 0)
+	discr = data[0];
+	a = data[1];
+	b = data[2];
+	if (discr == 0.0f)
+	{
+		*x0 = -0.5f * b / a;
+		*x1 = *x0;
+	}
+	else if (discr > 0.0f)
+	{
+		*x0 = (-b + sqrtf(discr)) / (2.0f * a);
+		*x1 = (-b - sqrtf(discr)) / (2.0f * a);
+		if (fabsf(*x0) > fabsf(*x1))
+			*x0 = *x1;
+	}
+}
+
+t_bool			intersect_sphere(t_ray *r, t_obj3d *obj, float *d)
+{
+	float	x0;
+	float	x1;
+	float	data[3];
+
+	data[0] = calculate_discriminant(r, obj, &data[1], &data[2]);
+	if (data[0] < 0.0f || data[1] == 0.0f)
 		return (false);
 	else
 	{
-		sqrtdiscr = sqrtf(discr);
-		t0 = (-b + sqrtdiscr) / (2);
-		t1 = (-b - sqrtdiscr) / (2);
-		if (t0 > t1)
-			t0 = t1;
-		if ((t0 > 0.001f) && (t0 < *t))
+		calculate_parameters(data, &x0, &x1);
+		if ((x0 > 0.5f) && (x0 < *d))
 		{
-			*t = t0;
+			*d = x0;
 			return (true);
 		}
 		else

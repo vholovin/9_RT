@@ -3,81 +3,117 @@
 /*                                                        :::      ::::::::   */
 /*   raytrace.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mvlad <mvlad@student.42.fr>                +#+  +:+       +#+        */
+/*   By: vholovin <marvin@42.fr>                    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2017/10/04 11:39:16 by mvlad             #+#    #+#             */
-/*   Updated: 2017/10/09 15:27:59 by mvlad            ###   ########.fr       */
+/*   Created: 2018/03/30 21:19:07 by vholovin          #+#    #+#             */
+/*   Updated: 2018/03/30 21:20:13 by vholovin         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rtv.h"
-#include "rtv_defines.h"
+#include "rt.h"
 
-static t_rgba	set_pixel_color(t_rtv *rtv)
+static t_rgba	set_pixel_color(t_rt *rt, int steep)
 {
 	t_rgba color;
 
-	color.red = (unsigned char)MIN(rtv->calc->color.red * 255.0f, 255.0f);
-	color.green = (unsigned char)MIN(rtv->calc->color.green * 255.0f, 255.0f);
-	color.blue = (unsigned char)MIN(rtv->calc->color.blue * 255.0f, 255.0f);
+	color_filters(&rt->calc->sum_color, rt->scene->status_color);
+	color.red = (unsigned char)MIN(rt->calc->sum_color.red
+		/ (float)steep * 255.0f, 255.0f);
+	color.green = (unsigned char)MIN(rt->calc->sum_color.green
+		/ (float)steep * 255.0f, 255.0f);
+	color.blue = (unsigned char)MIN(rt->calc->sum_color.blue
+		/ (float)steep * 255.0f, 255.0f);
 	color.alpha = SDL_ALPHA_OPAQUE;
 	return (color);
 }
 
-static void		set_raytrace(t_rtv *r, Uint16 x, Uint16 y)
+static void		set_ray(t_rt *rt, float x, float y)
 {
-	t_vec3d xcomp;
-	t_vec3d ycomp;
+	t_vec3	xcomp;
+	t_vec3	ycomp;
 	t_cam	*c;
 
-	c = &r->scene->cam;
-	r->calc->level = 1;
-	r->calc->coef = 1.0;
-	r->calc->color.red = 0;
-	r->calc->color.green = 0;
-	r->calc->color.blue = 0;
-	xcomp = vec3_scale(((x * c->pixel_width) - c->half_width), &c->vp_right);
-	ycomp = vec3_scale(((y * c->pixel_height) - c->half_height), &c->vp_up);
-	r->scene->ray.dir = vec3_norm(vec3_add3(c->eye, xcomp, ycomp));
+	c = &rt->scene->cam;
+	rt->calc->cur_power_ray = 1.0;
+	rt->calc->level_reflection = 0;
+	rt->calc->level_transparent = 0;
+	rt->calc->last_status_refract = false;
+	xcomp = vec3_scale(((x * c->s.pixel_width) - c->s.half_width), &c->right);
+	ycomp = vec3_scale(((y * c->s.pixel_height) - c->s.half_height), &c->up);
+	rt->scene->ray.dir = vec3_norm(vec3_add3(c->forward, xcomp, ycomp));
+	rt->scene->ray.pos = rt->scene->cam.pos;
 }
 
-static void		calculate_ray(t_rtv *rtv)
+void			calculate_ray(t_rt *rt)
 {
-	t_calc		*c;
-	t_scene		*s;
-
-	c = rtv->calc;
-	s = rtv->scene;
-	while ((c->coef > 0.01f) && (c->level++ < 15))
+	rt->calc->color.red = 0;
+	rt->calc->color.green = 0;
+	rt->calc->color.blue = 0;
+	rt->calc->cur_obj = -1;
+	if (rt->calc->cur_power_ray > 0.01f ||
+		(rt->calc->level_reflection == rt->scene->max_level_reflection &&
+		rt->calc->level_transparent == rt->scene->max_level_transparent))
 	{
-		c->cur_obj = -1;
-		if (object_intersect(rtv, &s->ray, &c->cur_obj, &c->new_start) == false)
-			break ;
-		if (normal_of_intersect(&c->intersect_normal,
-			&c->new_start, s->objects, c->cur_obj) == false)
-			break ;
-		c->material_n = s->objects[c->cur_obj]->material;
-		c->cur_mat = *s->materials[s->objects[c->cur_obj]->material];
-		calculate_light(rtv);
-		calculate_reflection(rtv);
+		if (object_intersect(rt) == true)
+		{
+			calculate_texture(rt);
+			calculate_ambient_light(rt);
+			if (rt->scene->lits_n != 0)
+			{
+				calculate_light(rt);
+				calculate_reflect_refract(rt);
+			}
+		}
 	}
 }
 
-void			raytrace(t_rtv *rtv)
+static void		anti_aliasing(t_rt *rt, Uint16 x, Uint16 y)
 {
-	Uint16 x;
-	Uint16 y;
+	float	t_x;
+	float	t_y;
+	int		steep;
 
+	steep = 0;
+	t_y = y;
+	while (t_y < y + 1)
+	{
+		t_x = x;
+		while (t_x < x + 1)
+		{
+			set_ray(rt, t_x, t_y);
+			calculate_ray(rt);
+			rt->calc->sum_color.red += rt->calc->color.red;
+			rt->calc->sum_color.green += rt->calc->color.green;
+			rt->calc->sum_color.blue += rt->calc->color.blue;
+			t_x += 1.0f / rt->scene->aa;
+			steep++;
+		}
+		t_y += 1.0f / rt->scene->aa;
+	}
+	rt->calc->pixel_color = set_pixel_color(rt, steep);
+}
+
+void			*raytrace(void *arg)
+{
+	t_rt_pth	*rt_pth;
+	t_rt		*rt;
+	Uint16		x;
+	Uint16		y;
+
+	rt_pth = (t_rt_pth *)arg;
+	rt = rt_pth->rt;
 	y = 0;
 	while (y++ < HEIGHT)
 	{
-		x = 0;
-		while (x++ < WIDTH)
+		x = WIDTH * rt_pth->i / NB_THREAD;
+		while (x++ < (WIDTH * (rt_pth->i + 1) / NB_THREAD))
 		{
-			set_raytrace(rtv, x, y);
-			calculate_ray(rtv);
-			rtv->calc->pixel_color = set_pixel_color(rtv);
-			ft_draw_pixel(x, y, &rtv->calc->pixel_color, rtv->win->draw_buf);
+			rt->calc->sum_color.red = 0.0f;
+			rt->calc->sum_color.green = 0.0f;
+			rt->calc->sum_color.blue = 0.0f;
+			anti_aliasing(rt, x, y);
+			ft_draw_pixel(x, y, &rt->calc->pixel_color, rt->win->draw_buf);
 		}
 	}
+	pthread_exit(0);
 }
