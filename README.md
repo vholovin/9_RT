@@ -49,9 +49,9 @@ C + POSIX Threads + cJSON + SDL2
 
 
 # CONTROLS:
-# '`esc`' - Exit
-# '`I`' - Open/Close gui window
-# '`P`' - Print Screen
+'`esc`' - Exit
+'`I`' - Open/Close gui window
+'`P`' - Print Screen
 
 # Movement camera:
 '`W`' - forward
