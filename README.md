@@ -49,27 +49,27 @@ C + POSIX Threads + cJSON + SDL2
 
 
 # CONTROLS:
-'`esc`' - Exit
-'`I`' - Open/Close gui window
-'`P`' - Print Screen
+- '`esc`' - Exit
+- '`I`' - Open/Close gui window
+- '`P`' - Print Screen
 
 # Movement camera:
-'`W`' - forward
-'`S`' - back
-'`A`' - left
-'`D`' - right
+- '`W`' - forward
+- '`S`' - back
+- '`A`' - left
+- '`D`' - right
 
 # Rotate camera:
-'`up`' - Up
-'`down`' - Down
-'`left`' - Left
-'`right`' - Righ
+- '`up`' - Up
+- '`down`' - Down
+- '`left`' - Left
+- '`right`' - Righ
 
 # Render flags:
-'`C`' - Change color (None, Cartoon, B&W, Sepia)
-'`-`', '`+`' - Change number of reflect
-'`[`', '`]`' - Change number of refract
-'`<`', '`>`' - Change number of Antialiasing
-'`T`' - Show/Hide texture
-'`;`' - Show/Hide shadow
-'`'`' - Show/Hide glossy
+- '`C`' - Change color (None, Cartoon, B&W, Sepia)
+- '`-`', '`+`' - Change number of reflect
+- '`[`', '`]`' - Change number of refract
+- '`<`', '`>`' - Change number of Antialiasing
+- '`T`' - Show/Hide texture
+- '`;`' - Show/Hide shadow
+- '`'`' - Show/Hide glossy
