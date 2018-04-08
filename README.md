@@ -11,6 +11,8 @@ This group project create program, which emulate Ray Tracing technology.
 <img align="center" src="print_screen_scenes/test_light_refr_refl_transp.png" width="100%" />
 <img align="center" src="print_screen_scenes/test_light_cone.png" width="100%" />
 <img align="center" src="print_screen_scenes/test_light_paralel.png" width="100%" />
+<img align="center" src="print_screen_scenes/test_objs_torus.png" width="100%" />
+<img align="center" src="print_screen_scenes/test_texture_torus.png" width="100%" />
 
 # Features:
 C + POSIX Threads + cJSON + SDL2
