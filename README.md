@@ -1,12 +1,18 @@
 # RT - 42/Unit Factory
 
-This project create program, which emulate Ray Tracing technology. 
+This group project create program, which emulate Ray Tracing technology. 
+
+# Authors:
+- mvlad
+- vholovin
+- vpalyvod
+- vvlasenk
 
 <img align="center" src="print_screen_scenes/test_light_refr_refl_transp.png" width="100%" />
 <img align="center" src="print_screen_scenes/test_light_cone.png" width="100%" />
 <img align="center" src="print_screen_scenes/test_light_paralel.png" width="100%" />
 
-Features:
+# Features:
 C + POSIX Threads + cJSON + SDL2
 - Multithread using pthreads
 - All scene data serialized of cJSON
