@@ -15,7 +15,7 @@ This group project create program, which emulate Ray Tracing technology.
 <img align="center" src="print_screen_scenes/test_texture_torus.png" width="100%" />
 
 # Features:
-C + POSIX Threads + cJSON + SDL2
+- C + POSIX Threads + cJSON + SDL2
 - Multithread using pthreads
 - All scene data serialized of cJSON
 - SDL2 used for interactive mode and for out information display
