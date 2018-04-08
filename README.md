@@ -1,6 +1,7 @@
 # RT - 42/Unit Factory
 
-This group project create program, which emulate Ray Tracing technology. 
+This group project create program, which emulate Ray Tracing technology.
+Look video how it works: https://www.youtube.com/watch?v=zxsZMYd8WYQ
 
 # Authors:
 - mvlad
