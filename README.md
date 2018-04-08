@@ -1,4 +1,10 @@
-# RT
+# RT - 42/Unit Factory
+
+This project create program, which emulate Ray Tracing technology. 
+
+<img align="center" src="print_screen_scenes/test_light_refr_refl_transp.png" width="100%" />
+<img align="center" src="print_screen_scenes/test_light_cone.png" width="100%" />
+<img align="center" src="print_screen_scenes/test_light_paralel.png" width="100%" />
 
 Features:
 C + POSIX Threads + cJSON + SDL2
@@ -6,7 +12,7 @@ C + POSIX Threads + cJSON + SDL2
 - All scene data serialized of cJSON
 - SDL2 used for interactive mode and for out information display
 
-Objects:
+# Objects:
 - Sphere
 - Infinity Plane
 - Infinity Cylinder
@@ -18,12 +24,12 @@ Objects:
 - Triangle
 - Limited Plane
 
-Camera:
+# Camera:
 - Angle of view
 - Rotate direction
 - Movement regardless of axes
 
-Ray Tracing:
+# Ray Tracing:
 - Multisampling for antialiasing
 - Ambient, point, direct and parralel lights
 - Lambert lighting model
@@ -35,24 +41,35 @@ Ray Tracing:
 - Shadows depend from transparency and color of objects
 - Cartoon effect, B&W and Sepia
 
-Texture mapping:
+# Texture mapping:
 - All objects have UV mapping
 - Stretch and compress textures
 - Shift textures on an objects
 - Loading textures from PNG, BMP and JPG
 
-Controls
 
-Key	Action:
-ESC - Exit
-I - Open/Close gui
-p - Print Screen
-W,S,A,D - Movement camera
-Up,Dwn,Lft,Rgth - Rotate camera
-C - Change color
-"-","+" - Change number of reflect
-"[","]" - Change number of refract
-"<",">" - Change number of Antialiasing
-" T " - show/hide texture
-" ; " - show/hide shadow
-" ' " - show/hide glossy
+# CONTROLS:
+# '`esc`' - Exit
+# '`I`' - Open/Close gui window
+# '`P`' - Print Screen
+
+# Movement camera:
+'`W`' - forward
+'`S`' - back
+'`A`' - left
+'`D`' - right
+
+# Rotate camera:
+'`up`' - Up
+'`down`' - Down
+'`left`' - Left
+'`right`' - Righ
+
+# Render flags:
+'`C`' - Change color (None, Cartoon, B&W, Sepia)
+'`-`', '`+`' - Change number of reflect
+'`[`', '`]`' - Change number of refract
+'`<`', '`>`' - Change number of Antialiasing
+'`T`' - Show/Hide texture
+'`;`' - Show/Hide shadow
+'`'`' - Show/Hide glossy
